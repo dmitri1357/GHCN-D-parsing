@@ -1,2 +1,2 @@
 # GHCN-D-parsing
-Code to ingest, parse and display GHCN-D global station temperature data.
+Code to ingest, parse and display GHCN-D global station temperature data. Here, I am pulling in data for all stations in western North America which have at least 30 years of records, and displaying 1) which stations broke all-time record maximum temperatures in 2021, and 2) by how many degrees the all-time record high was broken at each station. See following tweet which displays this data in final form: https://twitter.com/wx_statman/status/1423649701237182476
