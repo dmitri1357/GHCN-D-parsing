@@ -47,3 +47,4 @@ for file in tqdm(files):
 f = open("all_stations.pkl","wb")
 pickle.dump(df,f)
 f.close()
+# test
