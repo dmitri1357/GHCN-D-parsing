@@ -1,7 +1,55 @@
 #!/usr/bin/env python3
 
 import pickle
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt   
+from mpl_toolkits.basemap import Basemap
+
+import matplotlib as mpl
+mpl.rc('font',family='Arial')
 
 infile = open("all_stations.pkl",'rb')
 all_stations = pickle.load(infile)
 infile.close()
+
+all_stations['TMAX'] = all_stations['TMAX'].astype('float32')
+all_stations['year'] = pd.to_datetime(all_stations['DATE']).dt.year
+df1 = all_stations[all_stations.year == 2021]
+maxs1 = df1.groupby(['LATITUDE','LONGITUDE']).max().reset_index() # 4,063 stations
+df2 = all_stations[~(all_stations.year == 2021)]
+maxs2 = df2.groupby(['LATITUDE','LONGITUDE']).max().reset_index() # 4,063 stations
+del all_stations
+
+df = pd.DataFrame({'lat':maxs1.LATITUDE,'lon':maxs1.LONGITUDE,
+                   'max2021':maxs1.TMAX/10,'maxPrev':maxs2.TMAX/10})
+df.dropna(inplace=True)
+df = df[df.maxPrev <= 54.4]
+df = df[df.max2021 >= 10]
+df.drop([3987],inplace=True)
+df.drop([31],inplace=True)
+df.drop([404,216,413],inplace=True)
+df['diff'] = df.max2021 - df.maxPrev
+df.drop([992],inplace=True)
+df = df[df['diff'] >= 0]
+
+df['lat'] = df['lat'].astype('float32')
+df['lon'] = df['lon'].astype('float32')
+
+plt.figure(figsize=(10, 8))
+m = Basemap(projection='lcc', area_thresh=10000, resolution='l',
+            width=4.5E6, height=4.5E6,
+            lat_0=45, lon_0=-118)
+m.fillcontinents(color='0.6',lake_color='white',alpha=1,zorder=0)
+m.drawstates(linewidth=0.5,linestyle='solid',color='k')
+m.drawcountries(linewidth=0.5,linestyle='solid',color='k')
+m.drawcoastlines(color='black')
+lon = list(df.lon)
+lat = list(df.lat)
+var = list(df['diff'])
+m.scatter(lon, lat, latlon=True,
+          c=var, cmap=plt.cm.get_cmap('YlOrRd',14), alpha=1)
+plt.colorbar(ticks=np.arange(0,7.01,0.5), label='degrees C')
+plt.title('By how many degrees were all-time \n heat records broken in 2021?', size=23)
+plt.clim(0,7)
+plt.show()
