@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+
+import pickle
+
+infile = open("all_stations.pkl",'rb')
+all_stations = pickle.load(infile)
+infile.close()
