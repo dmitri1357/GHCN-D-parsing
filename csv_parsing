@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
+'''
+GHCN-D station data comes in individual CSV files for each station
+'''
+
 import pandas as pd
 import os
 import pickle
 from tqdm import tqdm
 
+# list all CSV files
 all_files = os.listdir()
 files = []
 for file in all_files:
@@ -14,14 +19,14 @@ for file in all_files:
 n = -1
 for file in tqdm(files):
     cols = pd.read_csv(file, index_col=0, nrows=0).columns.tolist()
-    if 'TMAX' in cols:
-        try:
+    if 'TMAX' in cols: # extract only stations which have TMAX data
+        try: # need exception handling here since some CSV files are read successfully with the python engine, some with the C engine
             df1 = pd.read_csv(file,dtype='str',engine='python',
                               usecols = ['DATE','LATITUDE','LONGITUDE','TMAX'],
                               error_bad_lines=False)
             yr1 = int(df1['DATE'][0][:4])
             yr2 = int(df1['DATE'][df1.shape[0]-1][:4])
-            if yr1 <= 1991 and yr2 == 2021:
+            if yr1 <= 1991 and yr2 == 2021: # only looking at stations which have >30 years of data
                 n += 1
                 if n == 0:
                     df = df1.copy()
